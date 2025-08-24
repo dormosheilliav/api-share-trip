@@ -5,3 +5,4 @@ module.exports = (req, res) => {
     time: new Date().toISOString(),
   });
 };
+//https://api-share-trip.vercel.app/api/health
