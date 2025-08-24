@@ -1,0 +1,9 @@
+{
+  "name": "trip-share-email-min",
+  "version": "1.0.0",
+  "private": true,
+  "license": "MIT",
+  "dependencies": {
+    "resend": "^3.5.0"
+  }
+}
