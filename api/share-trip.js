@@ -28,16 +28,10 @@ function buildTripLink(tripLink, tripId) {
   }
 }
 
-function toText(parts) {
-  return parts.filter(Boolean).join("\n");
-}
-
+function toText(parts) { return parts.filter(Boolean).join("\n"); }
 function escapeHtml(s) {
-  return String(s).replace(/[&<>"]/g, (c) => ({
-    "&": "&amp;", "<": "&lt;", ">": "&gt;", "\"": "&quot;"
-  }[c]));
+  return String(s).replace(/[&<>"]/g, (c) => ({ "&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;" }[c]));
 }
-
 function toHtml(parts) {
   return `<!doctype html><meta charset="utf-8"><body style="font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;color:#111;line-height:1.5;">
   <h2>Trip Share</h2>
@@ -47,7 +41,6 @@ function toHtml(parts) {
   <p style="color:#666;font-size:12px">Sent via Trip AI</p>
 </body>`;
 }
-
 function readRawBody(req) {
   return new Promise((resolve, reject) => {
     let data = "";
@@ -62,11 +55,19 @@ module.exports = async (req, res) => {
   // CORS preflight
   if (req.method === "OPTIONS") {
     const origin = req.headers.origin;
-    res.setHeader("Access-Control-Allow-Methods", "POST,OPTIONS");
+    res.setHeader("Access-Control-Allow-Methods", "GET,POST,OPTIONS");
     res.setHeader("Access-Control-Allow-Headers", "Content-Type,X-API-KEY");
     if (isAllowedOrigin(origin)) res.setHeader("Access-Control-Allow-Origin", origin || "*");
     res.setHeader("Vary", "Origin");
     return res.status(204).end();
+  }
+
+  // ✅ Health check (GET)
+  if (req.method === "GET") {
+    const origin = req.headers.origin;
+    if (isAllowedOrigin(origin)) res.setHeader("Access-Control-Allow-Origin", origin || "*");
+    res.setHeader("Vary", "Origin");
+    return res.status(200).json({ ok: true, endpoint: "share-trip", time: new Date().toISOString() });
   }
 
   if (req.method !== "POST") {
@@ -95,19 +96,8 @@ module.exports = async (req, res) => {
   }
 
   const {
-    to,
-    cc,
-    bcc,
-    subject,
-    appName,
-    tripTitle,
-    tripId,
-    tripLink,
-    message,
-    summary,
-    dates,
-    travelers,
-    imageUrl,
+    to, cc, bcc, subject, appName, tripTitle, tripId, tripLink,
+    message, summary, dates, travelers, imageUrl,
   } = body || {};
 
   if (!to) return res.status(400).json({ error: "Missing 'to' field" });
@@ -127,7 +117,6 @@ module.exports = async (req, res) => {
     message ? `Message: ${message}` : undefined,
     link ? `Open Trip: ${link}` : undefined,
   ]);
-
   const html = toHtml([
     `<h3 style="margin-top:0">${escapeHtml(tripTitle)}</h3>`,
     dates ? `<p><strong>Dates:</strong> ${escapeHtml(dates)}</p>` : undefined,
